@@ -24,7 +24,7 @@ def simple_cnn_model(weights_path=None):
 def VGG_16(weights_path=None):
     model = Sequential()
     
-    model.add(ZeroPadding2D((1,1),input_shape=(51,51,3)))
+    model.add(ZeroPadding2D((1,1),input_shape=(80,80,4)))
     model.add(Conv2D(64, (3, 3), activation='relu'))
     model.add(BatchNormalization())
     model.add(ZeroPadding2D((1,1)))
@@ -71,7 +71,7 @@ def VGG_16(weights_path=None):
     model.add(Dropout(0.5))
     model.add(Dense(4096, activation='relu'))
     model.add(Dropout(0.5))
-    model.add(Dense(5, activation='softmax'))
+    model.add(Dense(3, activation='softmax'))
 
     if weights_path:
         model.load_weights(weights_path)
