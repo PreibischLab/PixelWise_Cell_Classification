@@ -1,5 +1,0 @@
-*.pickle
-models
-__pycache__/
-data/
-logs/
