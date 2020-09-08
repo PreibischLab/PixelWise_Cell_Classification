@@ -8,6 +8,7 @@ from tensorflow.keras.layers import *
 from tensorflow.keras.optimizers import *
 from tensorflow.keras.callbacks import ModelCheckpoint, LearningRateScheduler
 from tensorflow.keras import backend as keras
+from tensorflow.keras.metrics import MeanIoU
 
 
 def unet(pretrained_weights = None,input_size = (240,240,4),output_size = 4):
@@ -56,8 +57,9 @@ def unet(pretrained_weights = None,input_size = (240,240,4),output_size = 4):
 #     changed to work in TF2.0
     model = Model(inputs, conv10)
 
-    model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
-    
+#     model.compile(optimizer = Adam(lr = 1e-4), loss = 'categorical_crossentropy', metrics=[mean_iou])
+    model.compile(optimizer = Adam(lr = 1e-4), loss = 'mse', metrics=[MeanIoU(num_classes=4)])
+#     metrics = ['accuracy']
 #     model.summary()
 
     if(pretrained_weights):
