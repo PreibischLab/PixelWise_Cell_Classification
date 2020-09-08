@@ -41,19 +41,32 @@ def get_prob_categories_per_instance_v2(instances_img, categories_img,instance,t
         print("Time: %s seconds" % (time.time() - start_time))
     return categories
 
+def getMax(categories):
+    max_val = max(categories.values())
+    for cat in categories:
+        if max_val == categories[cat]:
+            return cat,max_val
+ 
+    
 
-def get_categories_map_per_instances(instances_img, categories_img,threshold=0.7):
+
+def get_categories_map_per_instances(instances_img, categories_img,gt=None,threshold=0.7):
     cat_per_inst = []
+    not_found = 0
     np_instances = instances_img.max()
-    for i in tqdm(range(1,np_instances+1)):
+    for i in range(1,np_instances+1):
         categories = get_prob_categories_per_instance_v2(instances_img,categories_img,i,test=False)
-        max_val = max(categories.values())
-        if max_val>threshold:
-            for cat in categories:
-                if max_val == categories[cat]:
-                    cat_per_inst.append(cat)
-                    break
+        k,v = getMax(categories)
+        if v>=threshold:
+            cat_per_inst.append(k)
         else:
             cat_per_inst.append(-1)
+            if gt.any() == None :
+                print('{}- Not found: {}'.format(not_found,categories) )
+            else:
+                categories_gt = get_prob_categories_per_instance_v2(instances_img,gt,i,test=False)
+                right_category,_ = getMax(categories_gt)
+                print('{:.2f} - {}: {} '.format(v,k,right_category) )
+                      
     return cat_per_inst
             
