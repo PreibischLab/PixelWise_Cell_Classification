@@ -50,7 +50,13 @@ def generateCategoryImage(path_instance_image,path_csv):
         result = result + (img==i)*val
     return result
 
-
+def generateCategoryImagefromList(path_instance_image,list_inst):
+#     data = pd.read_csv(path_csv) 
+    img = read_img(path_instance_image)
+    result = np.zeros_like(img)
+    for i,val in enumerate(list_inst):
+        result = result + (img==(i+1))*val
+    return result
 
 def normalize_mask(mask,list_vals):
     size = list_vals.size

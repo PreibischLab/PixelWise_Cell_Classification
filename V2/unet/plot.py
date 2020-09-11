@@ -56,7 +56,18 @@ def plot_accuracy_curve(history):
     plt.ylim([0.0, 1])
     plt.legend(loc='lower right')
     
-
+def plot_curve(all_curves):
+    i = 0
+    for h in all_curves:
+        for history in h:
+            i = i+1
+            plt.plot(history, label='model '+i)
+#     plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
+    plt.xlabel('Epoch')
+    plt.ylabel('mean_io_u')
+    plt.ylim([0.0, 1])
+    plt.legend(loc='lower right')
+    
 def plotImages(train_X, train_y,x = 15):
     plt.figure(figsize=(50,50))
     for i in range(x):

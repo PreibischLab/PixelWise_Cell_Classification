@@ -4,6 +4,7 @@ import skimage.io as io
 import skimage.transform as trans
 import numpy as np
 from tensorflow.keras.models import *
+import tensorflow as tf
 from tensorflow.keras.layers import *
 from tensorflow.keras.optimizers import *
 from tensorflow.keras.callbacks import ModelCheckpoint, LearningRateScheduler
@@ -11,6 +12,14 @@ from tensorflow.keras import backend as keras
 from tensorflow.keras.metrics import MeanIoU
 
 
+# class MaskMeanIoU(MeanIoU):
+# #   """Mean Intersection over Union """
+#     def update_state(self, y_true, y_pred, sample_weight=None):
+#         print('hello')
+#         y_pred = tf.math.argmax(y_pred, axis=-1)
+#         print('y_true= {} y_pre={}'.format(y_true.shape, y_pred.shape))
+#         return super().update_state(y_true, y_pred, sample_weight=sample_weight)
+    
 def unet(pretrained_weights = None,input_size = (240,240,4),output_size = 4):
     inputs = Input(input_size)
     conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(inputs)
@@ -54,12 +63,15 @@ def unet(pretrained_weights = None,input_size = (240,240,4),output_size = 4):
     conv10 = Conv2D(output_size, (1,1), activation = 'softmax')(conv9)
 
 #     model = Model(input = inputs, output = conv10)
+
 #     changed to work in TF2.0
     model = Model(inputs, conv10)
 
-#     model.compile(optimizer = Adam(lr = 1e-4), loss = 'categorical_crossentropy', metrics=[mean_iou])
-    model.compile(optimizer = Adam(lr = 1e-4), loss = 'mse', metrics=[MeanIoU(num_classes=4)])
-#     metrics = ['accuracy']
+    model.compile(optimizer = Adam(lr = 1e-3), loss = 'categorical_crossentropy', metrics=['accuracy',MeanIoU( num_classes=output_size)])
+    
+#  loss : mse / categorical_crossentropy sparse_categorical_crossentropy
+#  metrics: MeanIoU(num_classes=4)
+
 #     model.summary()
 
     if(pretrained_weights):

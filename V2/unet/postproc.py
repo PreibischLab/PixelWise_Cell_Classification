@@ -56,6 +56,9 @@ def get_categories_map_per_instances(instances_img, categories_img,gt=None,thres
     np_instances = instances_img.max()
     for i in range(1,np_instances+1):
         categories = get_prob_categories_per_instance_v2(instances_img,categories_img,i,test=False)
+        if len(categories)== 0 :
+            cat_per_inst.append(-1)
+            continue
         k,v = getMax(categories)
         if v>=threshold:
             cat_per_inst.append(k)
