@@ -67,7 +67,7 @@ def unet(pretrained_weights = None,input_size = (240,240,4),output_size = 4):
 #     changed to work in TF2.0
     model = Model(inputs, conv10)
 
-    model.compile(optimizer = Adam(lr = 1e-3), loss = 'categorical_crossentropy', metrics=['accuracy',MeanIoU( num_classes=output_size)])
+    model.compile(optimizer = Adam(lr = 1e-4), loss = 'categorical_crossentropy', metrics=['accuracy',MeanIoU( num_classes=output_size)])
     
 #  loss : mse / categorical_crossentropy sparse_categorical_crossentropy
 #  metrics: MeanIoU(num_classes=4)
