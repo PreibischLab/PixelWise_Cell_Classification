@@ -37,7 +37,7 @@ def get_prob_categories_per_instance_v2(instances_img, categories_img,instance,t
     counts_elements = counts_elements[1:]
     sum_count = np.sum(counts_elements)
     categories = dict(zip((unique_elements.astype(np.int)-1), counts_elements/sum_count))
-    if(test):
+    if test :
         print("Time: %s seconds" % (time.time() - start_time))
     return categories
 

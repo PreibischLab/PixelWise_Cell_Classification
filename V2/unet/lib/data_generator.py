@@ -4,50 +4,6 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 import math
-
-def generate_aug_training_batch(input_path, batch_size=12,voxel_shape = [1,1,1],
-                                 input_shape= [240, 240,4],output_shape = [240, 240,4] ):
-    raw = gp.ArrayKey('raw')
-    gt = gp.ArrayKey('ground_truth')
-    files = os.listdir(input_path)
-    files = [os.path.join(input_path,f) for f in files ]
-#     print(files)
-    pipeline =( tuple (
-        gp.ZarrSource(
-            files[t],  # the zarr container
-            {raw: 'raw', gt : 'ground_truth'},  # which dataset to associate to the array key
-            {raw: gp.ArraySpec(interpolatable=True,dtype=np.dtype('float32'),voxel_size=voxel_shape),
-             gt: gp.ArraySpec(interpolatable=True,dtype=np.dtype('float32'),voxel_size=voxel_shape)}  # meta-information
-        )
-        + gp.RandomLocation()
-#         + gp.SimpleAugment()
-#         + gp.ElasticAugment(
-#             control_point_spacing=(16, 16),
-#             jitter_sigma=(4.0, 4.0),
-#             rotation_interval=(0, math.pi/2))
-        + gp.IntensityAugment(raw,
-                              scale_min=0.8,
-                              scale_max=1.2,
-                              shift_min=-0.2,
-                              shift_max=0.2)
-        for t in range(len(files))
-    )
-               + gp.RandomProvider()
-               +gp.Stack(batch_size)
-              )
-#     voxel_size = gp.Coordinate(voxel_shape)
-#     *voxel_size
-    input_size = gp.Coordinate(input_shape)
-    output_size = gp.Coordinate(output_shape)
-    
-    request = gp.BatchRequest()
-    request.add(raw,input_size)
-    request.add(gt,output_size)
-    
-    while 1:
-        with gp.build(pipeline):
-            batch = pipeline.request_batch(request)
-            yield batch[raw].data, batch[gt].data
             
 def generate_fast_training_batch(input_path, batch_size=12,voxel_shape = [1,1,1],
                                  input_shape= [240, 240,4],output_shape = [240, 240,4] ):
@@ -55,7 +11,6 @@ def generate_fast_training_batch(input_path, batch_size=12,voxel_shape = [1,1,1]
     gt = gp.ArrayKey('ground_truth')
     files = os.listdir(input_path)
     files = [os.path.join(input_path,f) for f in files ]
-#     print(files)
     pipeline =( tuple (
         gp.ZarrSource(
             files[t],  # the zarr container
@@ -69,8 +24,7 @@ def generate_fast_training_batch(input_path, batch_size=12,voxel_shape = [1,1,1]
                + gp.RandomProvider()
                +gp.Stack(batch_size)
               )
-#     voxel_size = gp.Coordinate(voxel_shape)
-#     *voxel_size
+
     input_size = gp.Coordinate(input_shape)
     output_size = gp.Coordinate(output_shape)
     
@@ -117,6 +71,46 @@ def generate_fast_training_batch_without_background(input_path, batch_size=12,vo
         with gp.build(pipeline):
             batch = pipeline.request_batch(request)
             yield batch[raw].data, batch[gt].data[:,:,:,1:4]
+            
+def generate_fast_training_batch_different_shape(input_path, batch_size=12,voxel_shape = [1,1,1],
+                                 input_shape= [240, 240,4],output_shape = [240, 240,4] ):
+    raw = gp.ArrayKey('raw')
+    gt = gp.ArrayKey('ground_truth')
+    files = os.listdir(input_path)
+    files = [os.path.join(input_path,f) for f in files ]
+#     print(files)
+    pipeline =( tuple (
+        gp.ZarrSource(
+            files[t],  # the zarr container
+            {raw: 'raw', gt : 'ground_truth'},  # which dataset to associate to the array key
+            {raw: gp.ArraySpec(interpolatable=True,dtype=np.dtype('float32'),voxel_size=voxel_shape),
+             gt: gp.ArraySpec(interpolatable=True,dtype=np.dtype('float32'),voxel_size=voxel_shape)}  # meta-information
+        )
+        + gp.RandomLocation()
+        for t in range(len(files))
+    )
+               + gp.RandomProvider()
+               +gp.Stack(batch_size)
+              )
+#     voxel_size = gp.Coordinate(voxel_shape)
+#     *voxel_size
+    input_size = gp.Coordinate(input_shape)
+    output_size = gp.Coordinate(output_shape)
+    
+    request = gp.BatchRequest()
+    request.add(raw,input_size)
+    request.add(gt,input_size)
+    diff = input_shape[1] - output_shape[1]
+    diff = int(diff/2)
+    max_p = input_shape[1]-diff
+    print('Difference padding: {}'.format(diff))
+    while 1:
+        with gp.build(pipeline):
+            batch = pipeline.request_batch(request)
+            im = batch[raw].data
+            out = batch[gt].data
+            out = out[:,diff:max_p,diff:max_p,1:4]
+            yield im, out.argmax(axis=3)
             
 def generate_test_batch(file,blocks, voxel_shape = [1,1,1]):
     raw = gp.ArrayKey('raw')

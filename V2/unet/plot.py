@@ -56,14 +56,20 @@ def plot_accuracy_curve(history):
     plt.ylim([0.0, 1])
     plt.legend(loc='lower right')
     
-def smartHistory(histories):
-    for h in histories:
-        plt.plot(histories[h], label=h)
-#     plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
+def smartHistory(histories,metrics = None):
+    plt.figure(figsize=(8,8))
+#     plt.clf()
+    if metrics is None:
+        for h in histories:
+            plt.plot(histories[h], label=h)
+    else:
+        for h in metrics:
+            plt.plot(histories[h], label=h)
+    
     plt.xlabel('Epoch')
-#     plt.ylabel('mean_io_u')
     plt.ylim([0.0, 1])
     plt.legend(loc='lower right')
+    plt.show()
 
 def plot_curve(all_curves):
     i = 0
