@@ -8,7 +8,7 @@ import tensorflow as tf
 from tensorflow.keras.layers import *
 from tensorflow.keras.losses import *
 from tensorflow.keras.optimizers import *
-from tensorflow.keras.metrics import MeanIoU
+
 from tensorflow.keras.callbacks import ModelCheckpoint, LearningRateScheduler
 
 from loss import IoULoss
@@ -47,10 +47,11 @@ def unet(pretrained_weights = None,input_size = (240,240,4),output_size = 4):
     merge8 = concatenate([conv2,up8], axis = 3)
     conv8 = Conv2D(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge8)
     conv8 = Conv2D(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv8)
-
+    conv8 = Dropout(0.5)(conv8)
     up9 = Conv2D(64, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv8))
     merge9 = concatenate([conv1,up9], axis = 3)
     conv9 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge9)
+    conv9 = Dropout(0.5)(conv9)
     conv9 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
 
     conv10 = Conv2D(output_size, (1,1), activation = 'softmax')(conv9)
@@ -139,7 +140,7 @@ def unet_valid(pretrained_weights = None,input_size = (572,572,4),output_size = 
     model = Model(inputs, conv10)
 
 
-    model.compile(optimizer = Adam(lr = 1e-4), loss = categorical_crossentropy, metrics=['accuracy', MeanIoU( num_classes=output_size)])
+  
     
 #  loss : mse / categorical_crossentropy sparse_categorical_crossentropy   IoULoss
 #  metrics: MeanIoU(num_classes=4) / 'accuracy', MeanIoU( num_classes=output_size)

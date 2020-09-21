@@ -48,7 +48,7 @@ def batch_data_generator(input_path,batch_size=12,voxel_shape = [1,1,1],
             if without_background:
                 out = out[:,:,:,1:4]
             if mix_output:
-                out = out.argmax(axis=3)
+                out = out.argmax(axis=3).astype(float)
             yield im, out
             
 # def generate_test_batch(file,blocks, voxel_shape = [1,1,1]):
