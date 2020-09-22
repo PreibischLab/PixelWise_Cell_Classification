@@ -1,17 +1,17 @@
-import numpy as np 
-import os
-import skimage.io as io
-import skimage.transform as trans
+# import numpy as np 
+# import os
+# import skimage.io as io
+# import skimage.transform as trans
 import numpy as np
 from tensorflow.keras.models import *
-import tensorflow as tf
+# import tensorflow as tf
 from tensorflow.keras.layers import *
-from tensorflow.keras.losses import *
-from tensorflow.keras.optimizers import *
+# from tensorflow.keras.losses import *
+# from tensorflow.keras.optimizers import *
 
-from tensorflow.keras.callbacks import ModelCheckpoint, LearningRateScheduler
+# from tensorflow.keras.callbacks import ModelCheckpoint, LearningRateScheduler
 
-from loss import IoULoss
+# from .loss import IoULoss
     
 def unet(pretrained_weights = None,input_size = (240,240,4),output_size = 4):
     inputs = Input(input_size)
@@ -80,21 +80,21 @@ def unet_valid(pretrained_weights = None,input_size = (572,572,4),output_size = 
 
     pool1 = MaxPooling2D(pool_size=(2, 2))(conv1) # 284
 
-    conv1 = tf.keras.layers.Cropping2D(cropping=((88,88), (88,88)))(conv1) # 568 -> 392
+    conv1 = Cropping2D(cropping=((88,88), (88,88)))(conv1) # 568 -> 392
 
     conv2 = Conv2D(128, 3, activation = 'relu', padding = 'valid', kernel_initializer = 'he_normal')(pool1)
     conv2 = Conv2D(128, 3, activation = 'relu', padding = 'valid', kernel_initializer = 'he_normal')(conv2)
 
     pool2 = MaxPooling2D(pool_size=(2, 2))(conv2) # 140
 
-    conv2 = tf.keras.layers.Cropping2D(cropping=((40,40), (40,40)))(conv2) # 280 -> 200
+    conv2 = Cropping2D(cropping=((40,40), (40,40)))(conv2) # 280 -> 200
 
     conv3 = Conv2D(256, 3, activation = 'relu', padding = 'valid', kernel_initializer = 'he_normal')(pool2)
     conv3 = Conv2D(256, 3, activation = 'relu', padding = 'valid', kernel_initializer = 'he_normal')(conv3)
    
     pool3 = MaxPooling2D(pool_size=(2, 2))(conv3) # 68
   
-    conv3 = tf.keras.layers.Cropping2D(cropping=((16,16), (16,16)))(conv3) # 136 -> 104
+    conv3 = Cropping2D(cropping=((16,16), (16,16)))(conv3) # 136 -> 104
    
     conv4 = Conv2D(512, 3, activation = 'relu', padding = 'valid', kernel_initializer = 'he_normal')(pool3)
     conv4 = Conv2D(512, 3, activation = 'relu', padding = 'valid', kernel_initializer = 'he_normal')(conv4)
@@ -103,7 +103,7 @@ def unet_valid(pretrained_weights = None,input_size = (572,572,4),output_size = 
 
     pool4 = MaxPooling2D(pool_size=(2, 2))(drop4) # 32
    
-    conv4 = tf.keras.layers.Cropping2D(cropping=((4,4), (4,4)))(drop4) # 64 -> 56
+    conv4 = Cropping2D(cropping=((4,4), (4,4)))(drop4) # 64 -> 56
 
     conv5 = Conv2D(1024, 3, activation = 'relu', padding = 'valid', kernel_initializer = 'he_normal')(pool4)
     

@@ -3,28 +3,15 @@
 
 
 
-import model 
+import lib.models import unet_valid
 import data 
 import matplotlib.pyplot as plt
+from params import *
+
 # from importlib import reload
 # reload(data)
 # reload(model)
 
-
-
-# for Gunpowder
-ZARR_FOLDER_TRAIN = '../../../../data/cells/raw/zarr/train/'
-ZARR_FOLDER_TEST = '../../../../data/cells/raw/zarr/test/'
-gp_batch_size= 2
-gp_voxel_shape = [1,1,1]
-gp_input_shape= [572, 572,4]
-gp_output_shape = [ 388, 388,3]
-
-# For unet
-OUTPUT_PATH = '../../../../data/cells/models/'
-
-unet_input_size = (572, 572,4)
-unet_output_size = 3
 
 
 

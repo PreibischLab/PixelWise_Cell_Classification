@@ -73,51 +73,11 @@ def normalize_image(img):
     img = img / 255.
     return img
 
-def create_zarr_per_pairV2(input_folder,instances_folder,csv_folder,zarr_folder, values = [1,2,3]):
-    pairs = generate_pairs(csv_folder,instances_folder)
-    size = len(pairs)
-    for i,(csv_path, inst_path) in enumerate(pairs.items()):
-        base_name = get_base_name(csv_path)
-        zarr_file = os.path.join(zarr_folder,base_name+'.zarr') 
-        print('{} - {}'.format(i,zarr_file))
-        root = zarr.open(zarr_file, mode='w')
-        
-        input_file = os.path.join(input_folder,base_name+'.tif')   
-        im_input = read_img(input_file)
-        im_inst = read_img(inst_path)
-        
-        im_categ = generateCategoryImage(inst_path,csv_path)
-        
-        # removed the last value because it is the error category
-#         categ_values = np.unique(im_categ)[:4]
-        categ_values = np.array(values)
-#     im_input.shape
-        shape_input = (1024,1024)
-#         shape_categ = (im_inst.shape+tuple([categ_values.size]))
-        shape_instances =  im_inst.shape
-        print('The value to be activated in mask: {} '.format(categ_values))
-        
-#         print('Img size        : {} {} < {}'.format(shape_input,im_input.dtype,im_input.max()))
-#         print('Instances size  : {} {} < {}'.format(shape_instances,im_inst.dtype,im_inst.max()))
-#         print('Categories size : {} {} < {}'.format(shape_categ,im_categ.dtype,im_categ.max()))
-        for i in range(4):
-            root.zeros(RAW+str(i), shape=shape_input, chunks=(256, 256), dtype='f8')
-        for i in range(3):
-            root.zeros(GT+str(i), shape=shape_input, chunks=(256, 256), dtype='f8')
-#         root.zeros(PREDICTION, shape=shape_mask, chunks=(256, 256,1), dtype='f8')
-        root.zeros(INSTANCES, shape=shape_instances, chunks=(256, 256), dtype='i8')
-        nomalized_image = normalize_image(im_input)
-        normalized_mask = normalize_mask(im_categ,categ_values)
-        print('After normalization: ')
-        print('Img size        : {} {} < {}'.format(nomalized_image.shape,nomalized_image.dtype,nomalized_image.max()))
-        print('Categories size : {} {} < {}'.format(normalized_mask.shape,normalized_mask.dtype,normalized_mask.max()))
-        for i in range(4):
-            root[RAW+str(i)] = nomalized_image[:,:,i]
-        for i in range(3):
-            root[GT+str(i)] = normalized_mask[:,:,i]
-        root[INSTANCES] = im_inst
 
 def create_zarr_per_pair(input_folder,instances_folder,csv_folder,zarr_folder, values = [0,1,2,3], normalize = False):
+
+    if not os.path.exists(zarr_folder):
+        os.makedirs(zarr_folder)
     pairs = generate_pairs(csv_folder,instances_folder)
     size = len(pairs)
     for i,(csv_path, inst_path) in enumerate(pairs.items()):
@@ -143,13 +103,15 @@ def create_zarr_per_pair(input_folder,instances_folder,csv_folder,zarr_folder, v
         print('Img size        : {} {} < {}'.format(shape_input,im_input.dtype,im_input.max()))
         print('Instances size  : {} {} < {}'.format(shape_instances,im_inst.dtype,im_inst.max()))
         print('Categories size : {} {} < {}'.format(shape_categ,im_categ.dtype,im_categ.max()))
-      
-        root.zeros(RAW, shape=shape_input, chunks=(256, 256,1), dtype='f8')
+        input_dtype = 'f8' if normalize else 'i8'
+        root.zeros(RAW, shape=shape_input, chunks=(256, 256,1), dtype='i8')
         root.zeros(GT, shape=shape_categ, chunks=(256, 256,1), dtype='f8')
 #         root.zeros(PREDICTION, shape=shape_mask, chunks=(256, 256,1), dtype='f8')
         root.zeros(INSTANCES, shape=shape_instances, chunks=(256, 256), dtype='i8')
         if normalize:
             im_input = normalize_image(im_input)
+        else:
+            im_input = im_input.astype(np.float32)
         normalized_mask = normalize_mask(im_categ,categ_values)
         print('After normalization: ')
         print('Img size        : {} {} < {}'.format(im_input.shape,im_input.dtype,im_input.max()))

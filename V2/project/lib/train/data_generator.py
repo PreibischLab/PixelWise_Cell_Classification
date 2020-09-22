@@ -4,12 +4,12 @@ import os
 import numpy as np
             
 
-def batch_data_generator(input_path,batch_size=12,voxel_shape = [1,1,1],
+def batch__aug_data_generator(input_path,batch_size=12,voxel_shape = [1,1,1],
                              input_shape= [240, 240,4],
                              output_shape = [240, 240,4],
                              without_background = False,
                                  mix_output = False, 
-                                 validate = False:
+                                 validate = False, seq= None ):
     raw = gp.ArrayKey('raw')
     gt = gp.ArrayKey('ground_truth')
     files = os.listdir(input_path)
@@ -57,8 +57,8 @@ def batch_data_generator(input_path,batch_size=12,voxel_shape = [1,1,1],
                     valid = validate_mask(batch[gt].data)
                 im = batch[raw].data
                 out = batch[gt].data
-                if different_shape:
-                    out = out[diff:max_p,diff:max_p,:]
+                # if different_shape:
+                #     out = out[diff:max_p,diff:max_p,:]
                 if without_background:
                     out = out[:,:,1:4]
                 if mix_output:
@@ -66,8 +66,22 @@ def batch_data_generator(input_path,batch_size=12,voxel_shape = [1,1,1],
                 imgs.append(im)
                 masks.append(out)
                 b = b+1
-            yield np.asarray(imgs), np.asarray(masks)
+            imgs = np.asarray(imgs)
+            masks = np.asarray(masks)
+            if seq is not None:
+                imgs, masks = augmentation(imgs,masks,seq)
+            if different_shape:
+                out = []
+                for m in masks:
+                    out.append(m[diff:max_p,diff:max_p,:])
+                masks = np.asarray(out)
+            yield imgs,masks
 
+def augmentation(images, masks,seq):
+    pos = images.shape[3]
+    all_stacks = np.concatenate((images, masks), axis=3)
+    images_aug = seq(images=all_stacks)
+    return images_aug[:,:,:,:pos],  images_aug[:,:,:,pos:]
 
 # Check if all the layers are > 0
 def validate_mask(mask):
